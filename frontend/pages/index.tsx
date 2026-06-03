@@ -1,9 +1,11 @@
+import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { WalletConnector } from '../components/WalletConnector';
-import { Mempool3DVisualizer } from '../components/Mempool3DVisualizer';
-import { LiquidityBubbleMap } from '../components/LiquidityBubbleMap';
-import { ArbDashboard } from '../components/ArbDashboard';
 import { useAppStore } from '../lib/store';
+
+const Mempool3DVisualizer = dynamic(() => import('../components/Mempool3DVisualizer').then(m => ({ default: m.Mempool3DVisualizer })), { ssr: false });
+const LiquidityBubbleMap = dynamic(() => import('../components/LiquidityBubbleMap').then(m => ({ default: m.LiquidityBubbleMap })), { ssr: false });
+const ArbDashboard = dynamic(() => import('../components/ArbDashboard').then(m => ({ default: m.ArbDashboard })), { ssr: false });
 
 function generateMockData() {
   const store = useAppStore.getState();
