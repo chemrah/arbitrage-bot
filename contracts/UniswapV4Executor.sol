@@ -124,12 +124,12 @@ contract UniswapV4Executor is FlashTipping {
         int256 cumulativeDelta;
 
         for (uint256 i = 0; i < len; i++) {
-            bool zeroForOne = currentCurrency == route[i].currency0;
+            bool zeroForOne = Currency.unwrap(currentCurrency) == Currency.unwrap(route[i].currency0);
 
             IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
                 zeroForOne: zeroForOne,
                 amountSpecified: i == 0 ? int256(amountIn) : int256(cumulativeDelta > 0 ? cumulativeDelta : -cumulativeDelta),
-                sqrtPriceLimitX96: zeroForOne ? 4295128740 : 146144670348521010328727385220117881058519721300779033241323110371833446839200
+                sqrtPriceLimitX96: zeroForOne ? 4295128740 : 146144670348521010328727385220117881058519721300779033241323110371833446839199
             });
 
             (int256 delta0, int256 delta1) = poolManager.swap(route[i], params, "");

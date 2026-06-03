@@ -80,5 +80,5 @@ abstract contract FlashTipping {
         require(finalBal > initial + gasCost, "FT: non-profitable");
     }
 
-    receive() external payable {}
+    receive() external payable virtual {}
 }

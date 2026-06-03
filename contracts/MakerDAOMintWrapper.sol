@@ -165,5 +165,5 @@ contract MakerDAOMintWrapper is FlashTipping, IERC3156FlashBorrower {
         }
     }
 
-    receive() external payable {}
+    receive() external payable override {}
 }
