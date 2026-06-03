@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use std::time::Instant;
-use futures::StreamExt;
+use futures::{StreamExt, SinkExt};
 use serde_json::json;
 use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::Message;

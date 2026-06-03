@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use tracing::info;
 use crate::{SharedState, ArbOpportunity};
 
 pub async fn build_and_submit_bundle(
