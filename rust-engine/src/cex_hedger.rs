@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use tokio::time::{self, Duration};
 use futures::StreamExt;
-use futures::SinkExt;
 use tokio_tungstenite::connect_async;
 use serde::Deserialize;
 use tracing::{info, warn, debug};

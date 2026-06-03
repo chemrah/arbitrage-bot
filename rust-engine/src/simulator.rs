@@ -1,7 +1,5 @@
-use std::sync::Arc;
-use revm::{Evm, Database};
 use revm::db::{CacheDB, EmptyDB};
-use revm::primitives::{Address, Bytes, TxKind, U256, SpecId};
+use revm::primitives::Address;
 use tracing::debug;
 
 use crate::{SharedState, ArbOpportunity, SwapStep};

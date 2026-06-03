@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
-alloy = { version = "0.12", features = ["providers", "pubsub", "sol-types", "rpc", "signers", "signer-local", "rpc-client-ws", "transport-ws", "reqwest", "reqwest-rustls-tls"] }
+alloy = { version = "0.12", features = ["providers", "provider-ws", "pubsub", "sol-types", "rpc", "signers", "signer-local", "rpc-client-ws", "transport-ws", "reqwest", "reqwest-rustls-tls"] }
 revm = "19"
 reqwest = { version = "0.12", features = ["json"] }
 tokio-tungstenite = "0.24"

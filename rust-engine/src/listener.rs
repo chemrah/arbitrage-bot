@@ -1,10 +1,9 @@
 use std::sync::Arc;
 use std::time::Instant;
-use alloy::primitives::Address;
 use alloy::providers::Provider;
 use alloy::transports::ws::WsConnect;
 use futures::StreamExt;
-use tracing::{info, warn, debug};
+use tracing::{info, warn};
 
 use crate::{SharedState, MempoolTx};
 

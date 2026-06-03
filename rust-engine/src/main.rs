@@ -11,7 +11,7 @@ use std::time::Instant;
 use dashmap::DashMap;
 use alloy::primitives::Address;
 use clap::Parser;
-use tracing::{info, error, debug};
+use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Debug)]

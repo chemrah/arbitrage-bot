@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tracing::{info, warn, debug};
+use tracing::{info, debug};
 
 use crate::{SharedState, ArbOpportunity};
 
