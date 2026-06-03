@@ -68,24 +68,9 @@ function MempoolParticles({ count = 300 }: { count?: number }) {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={colors.length / 3}
-          array={colors}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={sizes.length}
-          array={sizes}
-          itemSize={1}
-        />
+        <bufferAttribute args={[positions, 3]} attach="attributes-position" />
+        <bufferAttribute args={[colors, 3]} attach="attributes-color" />
+        <bufferAttribute args={[sizes, 1]} attach="attributes-size" />
       </bufferGeometry>
       <pointsMaterial
         size={0.08}
