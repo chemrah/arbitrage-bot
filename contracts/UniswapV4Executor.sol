@@ -129,7 +129,7 @@ contract UniswapV4Executor is FlashTipping {
             IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
                 zeroForOne: zeroForOne,
                 amountSpecified: i == 0 ? int256(amountIn) : int256(cumulativeDelta > 0 ? cumulativeDelta : -cumulativeDelta),
-                sqrtPriceLimitX96: zeroForOne ? 4295128740 : 146144670348521010328727385220117881058519721300779033241323110371833446839199
+                sqrtPriceLimitX96: zeroForOne ? 4295128740 : type(uint160).max
             });
 
             (int256 delta0, int256 delta1) = poolManager.swap(route[i], params, "");
