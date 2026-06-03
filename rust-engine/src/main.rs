@@ -7,64 +7,31 @@ mod solver;
 
 use std::sync::Arc;
 use std::collections::HashMap;
-use tokio::sync::RwLock;
-use tokio::time::{self, Duration, Instant};
-use clap::Parser;
-use tracing::{info, warn, error, debug};
-use tracing_subscriber::EnvFilter;
+use std::time::Instant;
 use dashmap::DashMap;
 use alloy::primitives::Address;
+use clap::Parser;
+use tracing::{info, error, debug};
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Debug)]
-#[command(name = "arb-engine", about = "MEV Arbitrage Engine for Uniswap V3/V4")]
+#[command(name = "arb-engine", about = "MEV Arbitrage Engine")]
 struct Args {
     #[arg(long, default_value = "ws://127.0.0.1:8546")]
     ws_rpc: String,
-
     #[arg(long, default_value = "http://127.0.0.1:8545")]
     http_rpc: String,
-
     #[arg(long, default_value = "0x0000000000000000000000000000000000000000")]
     executor_address: String,
-
     #[arg(long, default_value = "0x0000000000000000000000000000000000000000")]
     executor_private_key: String,
-
-    #[arg(long, default_value = "35")]
+    #[arg(long, default_value_t = 35)]
     bribe_percent: u64,
-
-    #[arg(long, default_value = "false")]
+    #[arg(long, default_value_t = false)]
     auto_pilot: bool,
-
-    #[arg(long)]
-    flashbots_endpoint: Option<String>,
-
-    #[arg(long)]
-    beaver_build_endpoint: Option<String>,
-
-    #[arg(long)]
-    titan_endpoint: Option<String>,
-
-    #[arg(long)]
-    builder069_endpoint: Option<String>,
-
-    #[arg(long)]
-    binance_api_key: Option<String>,
-
-    #[arg(long)]
-    binance_secret: Option<String>,
-
-    #[arg(long)]
-    okx_api_key: Option<String>,
-
-    #[arg(long)]
-    okx_secret: Option<String>,
-
-    #[arg(long)]
-    okx_passphrase: Option<String>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct AppConfig {
     pub ws_rpc: String,
     pub http_rpc: String,
@@ -72,50 +39,36 @@ pub struct AppConfig {
     pub executor_private_key: String,
     pub bribe_percent: u64,
     pub auto_pilot: bool,
-    pub flashbots_endpoint: Option<String>,
-    pub beaver_build_endpoint: Option<String>,
-    pub titan_endpoint: Option<String>,
-    pub builder069_endpoint: Option<String>,
-    pub binance_api_key: Option<String>,
-    pub binance_secret: Option<String>,
-    pub okx_api_key: Option<String>,
-    pub okx_secret: Option<String>,
-    pub okx_passphrase: Option<String>,
 }
 
 pub struct SharedState {
     pub config: AppConfig,
     pub mempool_txns: DashMap<String, MempoolTx>,
     pub pool_states: DashMap<Address, PoolState>,
-    pub pending_opportunities: RwLock<Vec<ArbOpportunity>>,
-    pub cex_prices: RwLock<HashMap<String, f64>>,
-    pub metrics: Arc<MetricsCollector>,
+    pub pending_opportunities: tokio::sync::RwLock<Vec<ArbOpportunity>>,
+    pub cex_prices: tokio::sync::RwLock<HashMap<String, f64>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MempoolTx {
     pub tx_hash: String,
     pub to: Address,
     pub value: u128,
-    pub gas_price: u128,
     pub timestamp: Instant,
-    pub data: Vec<u8>,
-    pub pool: Option<Address>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct PoolState {
     pub address: Address,
     pub token0: Address,
     pub token1: Address,
-    pub fee: u32,
     pub sqrt_price_x96: u128,
     pub tick: i32,
     pub liquidity: u128,
     pub last_updated: Instant,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ArbOpportunity {
     pub id: String,
     pub arb_type: ArbType,
@@ -127,15 +80,6 @@ pub struct ArbOpportunity {
     pub success_probability: f64,
     pub timestamp: Instant,
     pub route: Vec<SwapStep>,
-    pub simulation_result: Option<SimulationResult>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum ArbType {
-    TriangularV3,
-    CrossPoolV3V4,
-    CexDex,
-    JitLiquidity,
 }
 
 #[derive(Clone, Debug)]
@@ -146,116 +90,51 @@ pub struct SwapStep {
     pub sqrt_price_limit: u128,
 }
 
-#[derive(Clone, Debug)]
-pub struct SimulationResult {
-    pub profitable: bool,
-    pub profit: u128,
-    pub gas_used: u64,
-    pub tip_amount: u128,
-}
-
-pub struct MetricsCollector {
-    pub events_received: std::sync::atomic::AtomicU64,
-    pub simulations_run: std::sync::atomic::AtomicU64,
-    pub profitable_ops: std::sync::atomic::AtomicU64,
-    pub bundles_submitted: std::sync::atomic::AtomicU64,
-    pub bundles_included: std::sync::atomic::AtomicU64,
-}
-
-impl MetricsCollector {
-    pub fn new() -> Self {
-        Self {
-            events_received: std::sync::atomic::AtomicU64::new(0),
-            simulations_run: std::sync::atomic::AtomicU64::new(0),
-            profitable_ops: std::sync::atomic::AtomicU64::new(0),
-            bundles_submitted: std::sync::atomic::AtomicU64::new(0),
-            bundles_included: std::sync::atomic::AtomicU64::new(0),
-        }
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub enum ArbType {
+    TriangularV3,
+    CrossPoolV3V4,
+    CexDex,
+    JitLiquidity,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env()
-            .add_directive(tracing::Level::INFO.into()))
-        .json()
+        .with_env_filter(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
         .init();
 
     let args = Args::parse();
     info!("Starting Arbitrage Engine");
 
     let config = AppConfig {
-        ws_rpc: args.ws_rpc.clone(),
-        http_rpc: args.http_rpc.clone(),
-        executor_address: args.executor_address.parse()
-            .unwrap_or_else(|_| Address::ZERO),
-        executor_private_key: args.executor_private_key.clone(),
+        ws_rpc: args.ws_rpc,
+        http_rpc: args.http_rpc,
+        executor_address: args.executor_address.parse().unwrap_or(Address::ZERO),
+        executor_private_key: args.executor_private_key,
         bribe_percent: args.bribe_percent,
         auto_pilot: args.auto_pilot,
-        flashbots_endpoint: args.flashbots_endpoint.clone(),
-        beaver_build_endpoint: args.beaver_build_endpoint.clone(),
-        titan_endpoint: args.titan_endpoint.clone(),
-        builder069_endpoint: args.builder069_endpoint.clone(),
-        binance_api_key: args.binance_api_key.clone(),
-        binance_secret: args.binance_secret.clone(),
-        okx_api_key: args.okx_api_key.clone(),
-        okx_secret: args.okx_secret.clone(),
-        okx_passphrase: args.okx_passphrase.clone(),
     };
 
     let state = Arc::new(SharedState {
         config,
         mempool_txns: DashMap::new(),
         pool_states: DashMap::new(),
-        pending_opportunities: RwLock::new(Vec::with_capacity(1024)),
-        cex_prices: RwLock::new(HashMap::new()),
-        metrics: Arc::new(MetricsCollector::new()),
+        pending_opportunities: tokio::sync::RwLock::new(Vec::with_capacity(1024)),
+        cex_prices: tokio::sync::RwLock::new(HashMap::new()),
     });
 
-    let listener_state = state.clone();
-    let listener_handle = tokio::spawn(async move {
-        if let Err(e) = listener::start_listener(listener_state).await {
-            error!("Listener crashed: {}", e);
-        }
-    });
+    let s = state.clone();
+    tokio::spawn(async move { listener::start_listener(s).await });
 
-    let solver_state = state.clone();
-    let solver_handle = tokio::spawn(async move {
-        if let Err(e) = solver::start_solver(solver_state).await {
-            error!("Solver crashed: {}", e);
-        }
-    });
+    let s = state.clone();
+    tokio::spawn(async move { solver::start_solver(s).await });
 
-    let cex_state = state.clone();
-    let cex_handle = tokio::spawn(async move {
-        if let Err(e) = cex_hedger::start_cex_hedger(cex_state).await {
-            error!("CEX Hedger crashed: {}", e);
-        }
-    });
+    let s = state.clone();
+    tokio::spawn(async move { cex_hedger::start_cex_hedger(s).await });
 
-    let scan_state = state.clone();
-    let scan_handle = tokio::spawn(async move {
-        let mut interval = time::interval(Duration::from_millis(200));
-        loop {
-            interval.tick().await;
-            scan_state.metrics.events_received.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-            if scan_state.config.auto_pilot {
-                if let Err(e) = bundler::auto_execute_opportunities(&scan_state).await {
-                    debug!("Auto-execute cycle: {}", e);
-                }
-            }
-        }
-    });
-
-    info!("Engine initialized. Listening for events...");
-
-    tokio::select! {
-        _ = listener_handle => warn!("Listener task exited"),
-        _ = solver_handle => warn!("Solver task exited"),
-        _ = cex_handle => warn!("CEX hedger task exited"),
-        _ = scan_handle => warn!("Scan task exited"),
-    }
-
+    info!("Engine initialized. Listening...");
+    tokio::signal::ctrl_c().await?;
+    info!("Shutting down.");
     Ok(())
 }
