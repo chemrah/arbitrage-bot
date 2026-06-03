@@ -1,6 +1,4 @@
 use std::sync::Arc;
-use tracing::info;
-
 use crate::{SharedState, ArbOpportunity};
 
 pub async fn build_and_submit_bundle(
@@ -22,6 +20,5 @@ pub async fn submit_to_all_relays(
 pub async fn auto_execute_opportunities(
     _state: &SharedState,
 ) -> anyhow::Result<()> {
-    debug!("Auto-execute cycle (no-op in dev mode)");
     Ok(())
 }
