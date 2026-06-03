@@ -11,7 +11,7 @@ pub fn get_sqrt_price_x96(tick: i32) -> u128 {
 pub fn get_tick_at_price(sqrt_price_x96: u128) -> i32 {
     let q96 = 2u128.pow(96) as f64;
     let price = (sqrt_price_x96 as f64 / q96).powi(2);
-    (price.log(TICK_BASE).round() as i32)
+    price.log(TICK_BASE).round() as i32
 }
 
 pub fn get_amount_0_delta(sqrt_a: u128, sqrt_b: u128, liquidity: u128) -> u128 {

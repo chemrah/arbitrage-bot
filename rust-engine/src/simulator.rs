@@ -1,6 +1,5 @@
 use revm::db::{CacheDB, EmptyDB};
 use revm::primitives::Address;
-use tracing::debug;
 
 use crate::{SharedState, ArbOpportunity, SwapStep};
 
