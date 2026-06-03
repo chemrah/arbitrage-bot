@@ -2,73 +2,25 @@
 name = "arb-engine"
 version = "0.1.0"
 edition = "2021"
-description = "High-performance MEV arbitrage engine for Uniswap V3/V4"
 
 [dependencies]
-# Async runtime
-tokio = { version = "1", features = ["full", "sync"] }
+tokio = { version = "1", features = ["full"] }
 futures = "0.3"
-
-# Ethereum interaction via Alloy
-alloy = { version = "0.12", features = ["providers", "pubsub", "sol-types", "rpc-client", "signers", "signer-wallet"] }
-alloy-providers = "0.12"
-alloy-pubsub = "0.12"
-alloy-rpc-types = "0.12"
-alloy-sol-types = "0.12"
-alloy-consensus = "0.12"
-alloy-serde = "0.12"
-
-# EVM simulation
-revm = { version = "19", features = ["std", "serde", "ethereum"] }
-revm-primitives = "19"
-
-# HTTP / WebSocket clients
+alloy = { version = "0.12", features = ["providers", "pubsub", "sol-types", "rpc", "signers", "wallet"] }
+revm = "19"
 reqwest = { version = "0.12", features = ["json"] }
-hyper = "1"
-hyper-rustls = "0.27"
-tungstenite = "0.26"
-tokio-tungstenite = "0.26"
-
-# Serialization
+tokio-tungstenite = "0.24"
+tungstenite = "0.24"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-bincode = "1"
 hex = "0.4"
-
-# Math
-rust_decimal = "1"
-rust_decimal_macros = "1"
-num-bigint = "0.4"
-num-traits = "0.2"
-num-rational = "0.4"
-uint = "0.10"
 ruint = "1"
-
-# Utilities
-chrono = "0.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
 anyhow = "1"
-thiserror = "1"
 clap = { version = "4", features = ["derive"] }
 dashmap = "6"
-parking_lot = "0.12"
-crossbeam = "0.8"
-lru = "0.12"
-moka = "0.12"
-itertools = "0.13"
-rand = "0.9"
 uuid = { version = "1", features = ["v4"] }
-
-# Metrics & monitoring
-metrics = "0.24"
-metrics-exporter-prometheus = "0.16"
-
-# Database
-sled = "0.34"
-
-# Crypto
-sha3 = "0.10"
 tiny-keccak = "2"
 
 [profile.release]
